@@ -10,7 +10,8 @@ export const API_BASE_URL = '';
 
 export const getImageUrl = (imageObject: any): string => {
   if (!imageObject) return '';
-  return `${API_BASE_URL}${imageObject.url}`;
+  // Use our proxy for images to avoid CORS issues
+  return imageObject.url;
 };
 
 export const formatPrice = (price: number): string => {

@@ -43,7 +43,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/products/:id', async (req, res) => {
     try {
       const id = req.params.id;
-      const url = `${STRAPI_API_URL}/products?populate=*&filters[id][$eq]=${id}`;
+      const url = `http://44.201.141.60:1337/api/products?populate=*&filters[id][$eq]=${id}`;
       const data = await fetchFromStrapi(url);
       res.json(data);
     } catch (error) {
