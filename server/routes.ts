@@ -26,8 +26,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Proxy for Strapi API to avoid CORS issues
   app.get('/api/products', async (req, res) => {
     try {
-      const queryParams = req.url.includes('?') ? `&${req.url.split('?')[1]}` : '';
-      const url = `${STRAPI_API_URL}/products?populate=*${queryParams}`;
+      // Direct approach - use the exact URL provided
+      const url = 'http://44.201.141.60:1337/api/products?populate=*';
       const data = await fetchFromStrapi(url);
       res.json(data);
     } catch (error) {
