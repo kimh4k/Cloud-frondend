@@ -5,7 +5,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const API_BASE_URL = 'http://44.201.141.60:1337';
+// Using our Express server as proxy to avoid CORS issues
+export const API_BASE_URL = '';
 
 export const getImageUrl = (imageObject: any): string => {
   if (!imageObject) return '';
