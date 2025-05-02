@@ -62,16 +62,15 @@ const Checkout = () => {
         totalAmount: getCartTotal()
       };
 
-      // Simulate order placement with a timeout
-      // In a real app, you would send this to your backend
-      // const response = await apiRequest('POST', '/api/orders', orderData);
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Send the order to our backend API
+      const response = await apiRequest('POST', '/api/orders', orderData);
+      const result = await response.json();
       
       // Order success
       clearCart();
       toast({
         title: 'Order placed successfully!',
-        description: 'Thank you for your purchase.',
+        description: `Thank you for your purchase. Order ID: ${result.orderId}`,
       });
       navigate('/');
     } catch (error) {

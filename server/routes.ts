@@ -84,6 +84,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint for creating orders
+  app.post('/api/orders', async (req, res) => {
+    try {
+      // In a real-world scenario, you would save this order to a database
+      // and possibly forward it to a payment processor or external system
+      const { customerInfo, orderItems, totalAmount } = req.body;
+      
+      // Log the order information (this is just for demonstration)
+      console.log('New order received:', {
+        customer: customerInfo,
+        items: orderItems.map((item: any) => ({ 
+          id: item.id, 
+          title: item.title, 
+          price: item.price,
+          quantity: item.quantity 
+        })),
+        total: totalAmount,
+        date: new Date().toISOString()
+      });
+      
+      // Simulate processing time for the order
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Send success response
+      res.status(201).json({ 
+        success: true, 
+        orderId: `ORD-${Date.now()}`,
+        message: 'Order placed successfully' 
+      });
+    } catch (error) {
+      console.error('Error processing order:', error);
+      res.status(500).json({ 
+        error: 'Failed to process order', 
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
