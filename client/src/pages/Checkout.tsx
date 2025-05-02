@@ -129,9 +129,19 @@ const Checkout = () => {
         totalAmount: getCartTotal()
       };
 
-      // Send the order to our backend API
-      const response = await apiRequest('POST', '/api/orders', orderData);
+      console.log('Sending order data:', orderData);
+
+      // Create a fetch call directly instead of using apiRequest to have more control
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+      
+      console.log('Order API response status:', response.status);
+      
       const result = await response.json();
+      console.log('Order result:', result);
       
       // Order success
       clearCart();
@@ -141,9 +151,10 @@ const Checkout = () => {
       });
       navigate('/');
     } catch (error) {
+      console.error('Order placement error:', error);
       toast({
         title: 'Failed to place order',
-        description: 'Please try again later.',
+        description: error instanceof Error ? error.message : 'Please try again later.',
         variant: 'destructive'
       });
     } finally {
