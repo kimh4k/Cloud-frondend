@@ -1,28 +1,11 @@
 import React, { useState } from 'react';
 import { useCart } from '../contexts/CartContext';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPrice } from '../lib/utils';
 import { apiRequest } from '../lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-
-const orderFormSchema = z.object({
-  fullName: z.string().min(2, { message: 'Full name must be at least 2 characters' }),
-  email: z.string().email({ message: 'Please enter a valid email address' }),
-  address: z.string().min(5, { message: 'Address must be at least 5 characters' }),
-  city: z.string().min(2, { message: 'City is required' }),
-  postalCode: z.string().min(3, { message: 'Postal code is required' }),
-  country: z.string().min(2, { message: 'Country is required' }),
-  phone: z.string().min(5, { message: 'Phone number is required' })
-});
-
-type OrderFormValues = z.infer<typeof orderFormSchema>;
 
 const Checkout = () => {
   const { cartItems, getCartTotal, clearCart } = useCart();
@@ -30,9 +13,41 @@ const Checkout = () => {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   
-  const form = useForm<OrderFormValues>({
-    resolver: zodResolver(orderFormSchema),
-    defaultValues: {
+  // Form state
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    address: '',
+    city: '',
+    postalCode: '',
+    country: '',
+    phone: ''
+  });
+  
+  // Form errors
+  const [errors, setErrors] = useState<Record<string, string>>({
+    fullName: '',
+    email: '',
+    address: '',
+    city: '',
+    postalCode: '',
+    country: '',
+    phone: ''
+  });
+
+  // Handle input changes
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  // Validate form
+  const validateForm = () => {
+    let valid = true;
+    const newErrors: Record<string, string> = {
       fullName: '',
       email: '',
       address: '',
@@ -40,10 +55,62 @@ const Checkout = () => {
       postalCode: '',
       country: '',
       phone: ''
+    };
+    
+    // Validate fullName
+    if (formData.fullName.length < 2) {
+      newErrors.fullName = 'Full name must be at least 2 characters';
+      valid = false;
     }
-  });
+    
+    // Validate email
+    if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+      valid = false;
+    }
+    
+    // Validate address
+    if (formData.address.length < 5) {
+      newErrors.address = 'Address must be at least 5 characters';
+      valid = false;
+    }
+    
+    // Validate city
+    if (formData.city.length < 2) {
+      newErrors.city = 'City is required';
+      valid = false;
+    }
+    
+    // Validate postal code
+    if (formData.postalCode.length < 3) {
+      newErrors.postalCode = 'Postal code is required';
+      valid = false;
+    }
+    
+    // Validate country
+    if (formData.country.length < 2) {
+      newErrors.country = 'Country is required';
+      valid = false;
+    }
+    
+    // Validate phone
+    if (formData.phone.length < 5) {
+      newErrors.phone = 'Phone number is required';
+      valid = false;
+    }
+    
+    setErrors(newErrors);
+    return valid;
+  };
 
-  const handleSubmit = async (values: OrderFormValues) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate form
+    if (!validateForm()) {
+      return;
+    }
+    
     if (cartItems.length === 0) {
       toast({
         title: 'Cart is empty',
@@ -57,7 +124,7 @@ const Checkout = () => {
 
     try {
       const orderData = {
-        customerInfo: values,
+        customerInfo: formData,
         orderItems: cartItems,
         totalAmount: getCartTotal()
       };
@@ -84,6 +151,27 @@ const Checkout = () => {
     }
   };
 
+  // Helper component for form fields
+  const FormField = ({ label, name, type = 'text', placeholder }: { label: string; name: string; type?: string; placeholder: string }) => (
+    <div className="mb-4">
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
+      <input
+        type={type}
+        id={name}
+        name={name}
+        placeholder={placeholder}
+        value={formData[name as keyof typeof formData]}
+        onChange={handleChange}
+        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+      />
+      {errors[name] && (
+        <p className="mt-1 text-sm text-red-600">{errors[name]}</p>
+      )}
+    </div>
+  );
+
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <h1 className="text-3xl font-bold mb-8 text-center">Checkout</h1>
@@ -96,117 +184,60 @@ const Checkout = () => {
             <CardDescription>Please enter your shipping details</CardDescription>
           </CardHeader>
           <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <FormField
+                label="Full Name"
+                name="fullName"
+                placeholder="John Doe"
+              />
+              
+              <FormField
+                label="Email"
+                name="email"
+                type="email"
+                placeholder="john@example.com"
+              />
+              
+              <FormField
+                label="Address"
+                name="address"
+                placeholder="123 Main St"
+              />
+              
+              <div className="grid grid-cols-2 gap-4">
                 <FormField
-                  control={form.control}
-                  name="fullName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="John Doe" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="City"
+                  name="city"
+                  placeholder="New York"
                 />
                 
                 <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="john@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Postal Code"
+                  name="postalCode"
+                  placeholder="10001"
                 />
-                
-                <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Address</FormLabel>
-                      <FormControl>
-                        <Input placeholder="123 Main St" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="city"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>City</FormLabel>
-                        <FormControl>
-                          <Input placeholder="New York" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="postalCode"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Postal Code</FormLabel>
-                        <FormControl>
-                          <Input placeholder="10001" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="country"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Country</FormLabel>
-                      <FormControl>
-                        <Input placeholder="United States" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone</FormLabel>
-                      <FormControl>
-                        <Input placeholder="+1 (555) 123-4567" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <Button 
-                  type="submit" 
-                  className="w-full mt-6" 
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Processing...' : 'Place Order'}
-                </Button>
-              </form>
-            </Form>
+              </div>
+              
+              <FormField
+                label="Country"
+                name="country"
+                placeholder="United States"
+              />
+              
+              <FormField
+                label="Phone"
+                name="phone"
+                placeholder="+1 (555) 123-4567"
+              />
+              
+              <Button 
+                type="submit" 
+                className="w-full mt-6" 
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Processing...' : 'Place Order'}
+              </Button>
+            </form>
           </CardContent>
         </Card>
         
