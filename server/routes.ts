@@ -3,20 +3,23 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 
 const STRAPI_API_URL = 'http://44.201.141.60:1337/api';
-const STRAPI_API_TOKEN = '6aad3898e81a76409ee4bb000c07e5d0c133876ad93a33803e19b1dbd6ecf5857348cb65640eb843b0bda496eb72bf9260d277458536eaa7615ef3ee756237fee7601a8ca82e702b34f6a1283beba1dff253afe466212e8db3e1d8ab74039e57c35986a4171e797c2b016519b4b47eab868dc91e3160f82c93fc396fa15be8fe';
 
 async function fetchFromStrapi(url: string) {
-  const response = await fetch(url, {
-    headers: {
-      'Authorization': `Bearer ${STRAPI_API_TOKEN}`
+  console.log(`Fetching from Strapi: ${url}`);
+  try {
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      const responseText = await response.text();
+      console.error(`Strapi response error: ${response.status} ${response.statusText}`, responseText);
+      throw new Error(`Failed to fetch from Strapi: ${response.status} ${response.statusText}`);
     }
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch from Strapi: ${response.status} ${response.statusText}`);
+    
+    return response.json();
+  } catch (error) {
+    console.error('Error in fetchFromStrapi:', error);
+    throw error;
   }
-  
-  return response.json();
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
