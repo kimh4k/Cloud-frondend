@@ -16,6 +16,7 @@ interface CartContextProps {
   openCart: () => void;
   getCartTotal: () => number;
   getCartCount: () => number;
+  clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextProps | undefined>(undefined);
@@ -98,6 +99,11 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return cartItems.reduce((count, item) => count + item.quantity, 0);
   };
 
+  const clearCart = () => {
+    setCartItems([]);
+    showNotification('Cart has been cleared');
+  };
+
   const showNotification = (message: string) => {
     setNotification({
       show: true,
@@ -125,6 +131,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       openCart,
       getCartTotal,
       getCartCount,
+      clearCart,
     }}>
       {children}
     </CartContext.Provider>

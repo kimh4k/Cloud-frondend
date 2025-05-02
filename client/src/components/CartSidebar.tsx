@@ -1,6 +1,7 @@
 import { useCart } from '../contexts/CartContext';
 import { getImageUrl, formatPrice } from '../lib/utils';
 import { X, Plus, Minus } from 'lucide-react';
+import { Link } from 'wouter';
 
 const CartSidebar = () => {
   const { 
@@ -115,9 +116,11 @@ const CartSidebar = () => {
                     Shipping and taxes calculated at checkout.
                   </p>
                   <div className="mt-6">
-                    <button className="flex w-full justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-primary hover:bg-primary/90">
-                      Checkout
-                    </button>
+                    <Link href="/checkout" onClick={closeCart}>
+                      <button className="flex w-full justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-primary hover:bg-primary/90">
+                        Checkout
+                      </button>
+                    </Link>
                   </div>
                   <div className="mt-6 flex justify-center text-sm text-center text-gray-500">
                     <p>
