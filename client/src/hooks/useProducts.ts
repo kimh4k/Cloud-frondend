@@ -48,7 +48,7 @@ export const useFetchProduct = (id: string) => {
   return useQuery<ApiResponse>({
     queryKey: [`/api/products/${id}`],
     queryFn: async () => {
-      const res = await fetch(`${API_BASE_URL}/api/products/${id}`);
+      const res = await fetch(`${API_BASE_URL}/api/products/${id}?populate=*`);
       if (!res.ok) {
         throw new Error('Failed to fetch product');
       }
