@@ -2,7 +2,7 @@ import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 
-const STRAPI_API_URL = 'http://54.159.48.153:1337/api';
+const STRAPI_API_URL = 'https://api.dachyubagain.store/api';
 
 async function fetchFromStrapi(url: string, retries = 3) {
   console.log(`Fetching from Strapi: ${url}`);
@@ -73,7 +73,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Proxy for Strapi API to avoid CORS issues
   app.get('/api/products', async (req, res) => {
     try {
-      const url = 'http://54.159.48.153:1337/api/products?populate=*';
+      const url = `${STRAPI_API_URL}/products?populate=*`; // Now uses HTTPS
       const data = await fetchFromStrapi(url);
       res.json(data);
     } catch (error) {
@@ -89,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/products/:id', async (req, res) => {
     try {
       const id = req.params.id;
-      const url = 'http://54.159.48.153:1337/api/products?populate=*';
+      const url = '${STRAPI_API_URL}/products?populate=*';
       const data = await fetchFromStrapi(url);
       
       // Find the product by id or documentId
@@ -124,7 +124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/uploads/*', async (req, res) => {
     try {
       const filePath = req.path;
-      const response = await fetch(`http://54.159.48.153:1337${filePath}`);
+      const response = await fetch(`https://api.dachyubagain.store/api${filePath}`);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
