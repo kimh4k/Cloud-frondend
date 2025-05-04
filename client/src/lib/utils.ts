@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // Using our Express server as proxy to avoid CORS issues
-export const API_BASE_URL = 'http://127.0.0.1:5000';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://main.d3pezcl5205jqu.amplifyapp.com';
 
 export const getImageUrl = (imageObject: any): string => {
   if (!imageObject) return '';
