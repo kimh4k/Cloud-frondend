@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // Using our Express server as proxy to avoid CORS issues
-export const API_BASE_URL = '';
+export const API_BASE_URL = 'http://127.0.0.1:5000';
 
 export const getImageUrl = (imageObject: any): string => {
   if (!imageObject) return '';

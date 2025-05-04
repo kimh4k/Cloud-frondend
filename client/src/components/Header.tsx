@@ -43,7 +43,7 @@ const Header = () => {
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="text-primary font-bold text-xl">StyleHub</Link>
+            <Link href="/" className="text-primary font-bold text-xl">TeenC-xYz</Link>
           </div>
           
           {/* Desktop Navigation */}
