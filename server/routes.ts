@@ -1,6 +1,6 @@
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage"; // Import your storage configuration if needed
+import { storage } from "./storage";
 
 const STRAPI_API_URL = 'https://api.dachyubagain.store';
 
@@ -19,7 +19,6 @@ async function fetchFromStrapi(url: string, retries = 3) {
           'Accept': 'application/json',
           'Connection': 'keep-alive',
         },
-        // Add keepalive to maintain connection
         keepalive: true,
       });
       
@@ -56,12 +55,10 @@ async function fetchFromStrapi(url: string, retries = 3) {
         console.error(`Unknown error in fetchFromStrapi (attempt ${attempt}/${retries}):`, error);
       }
 
-      // If this was the last attempt, throw the error
       if (attempt === retries) {
         throw error;
       }
 
-      // Wait before retrying (exponential backoff)
       const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
       console.log(`Retrying in ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
@@ -73,7 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Proxy for Strapi API to avoid CORS issues
   app.get('/api/products', async (req, res) => {
     try {
-      const url = `${STRAPI_API_URL}/products?populate=*`; // Now uses HTTPS
+      const url = `${STRAPI_API_URL}/api/products?populate=*`;
       const data = await fetchFromStrapi(url);
       res.json(data);
     } catch (error) {
@@ -89,10 +86,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/products/:id', async (req, res) => {
     try {
       const id = req.params.id;
-      const url = `${STRAPI_API_URL}/products/${id}?populate=*`; // Correct URL format with ID
+      const url = `${STRAPI_API_URL}/api/products?populate=*`;
       const data = await fetchFromStrapi(url);
       
-      // Find the product by id or documentId
       const product = data.data.find((p: any) => 
         p.id.toString() === id || p.documentId === id
       );
@@ -106,7 +102,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return;
       }
       
-      // Return the product in the same format as the API
       res.json({
         data: [product],
         meta: data.meta
@@ -123,22 +118,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Proxy for static media files from Strapi
   app.get('/uploads/*', async (req, res) => {
     try {
-      const filePath = req.path.replace('/uploads', ''); // Remove '/uploads' from the path to avoid duplicate '/api/api'
-      const response = await fetch(`https://api.dachyubagain.store/uploads${filePath}`);
+      const filePath = req.path;
+      const response = await fetch(`${STRAPI_API_URL}${filePath}`);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
       }
       
-      // Get the response body as buffer
       const buffer = await response.arrayBuffer();
-      
-      // Forward the content type and other relevant headers
       response.headers.forEach((value, key) => {
         res.setHeader(key, value);
       });
       
-      // Send the response
       res.send(Buffer.from(buffer));
     } catch (error) {
       console.error('Error fetching file:', error);
@@ -152,11 +143,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Endpoint for creating orders
   app.post('/api/orders', async (req, res) => {
     try {
-      // In a real-world scenario, you would save this order to a database
-      // and possibly forward it to a payment processor or external system
       const { customerInfo, orderItems, totalAmount } = req.body;
       
-      // Log the order information (this is just for demonstration)
       console.log('New order received:', {
         customer: customerInfo,
         items: orderItems.map((item: any) => ({ 
@@ -169,10 +157,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         date: new Date().toISOString()
       });
       
-      // Simulate processing time for the order
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Send success response
       res.status(201).json({ 
         success: true, 
         orderId: `ORD-${Date.now()}`,
@@ -188,6 +174,5 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
-
   return httpServer;
 }
