@@ -2,7 +2,7 @@ import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage"; // Import your storage configuration if needed
 
-const STRAPI_API_URL = 'https://api.dachyubagain.store/';
+const STRAPI_API_URL = 'https://api.dachyubagain.store';
 
 async function fetchFromStrapi(url: string, retries = 3) {
   console.log(`Fetching from Strapi: ${url}`);
