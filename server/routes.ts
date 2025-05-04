@@ -2,7 +2,7 @@ import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 
-const STRAPI_API_URL = 'https://api.dachyubagain.store/api';
+const STRAPI_API_URL = 'https://api.dachyubagain.store/';
 
 async function fetchFromStrapi(url: string, retries = 3) {
   console.log(`Fetching from Strapi: ${url}`);
@@ -89,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/products/:id', async (req, res) => {
     try {
       const id = req.params.id;
-      const url = '${STRAPI_API_URL}/products?populate=*';
+      const url = `${STRAPI_API_URL}/products/${id}?populate=*`; // Correct URL format with ID
       const data = await fetchFromStrapi(url);
       
       // Find the product by id or documentId
