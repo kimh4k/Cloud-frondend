@@ -1,6 +1,6 @@
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./storage"; // Import your storage configuration if needed
 
 const STRAPI_API_URL = 'https://api.dachyubagain.store/';
 
@@ -123,8 +123,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Proxy for static media files from Strapi
   app.get('/uploads/*', async (req, res) => {
     try {
-      const filePath = req.path;
-      const response = await fetch(`https://api.dachyubagain.store/api${filePath}`);
+      const filePath = req.path.replace('/uploads', ''); // Remove '/uploads' from the path to avoid duplicate '/api/api'
+      const response = await fetch(`https://api.dachyubagain.store/uploads${filePath}`);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
