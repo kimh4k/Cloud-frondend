@@ -1,10 +1,22 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Add CORS configuration
+app.use(cors({
+  origin: [
+    'https://main.d3pezcl5205jqu.amplifyapp.com',
+    'http://localhost:5173', // For local development
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -56,13 +68,11 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
+  // Update the server configuration
+  const port = process.env.PORT || 5000;
   server.listen({
     port,
-    host: "127.0.0.1",
+    host: "0.0.0.0", // Listen on all network interfaces
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
